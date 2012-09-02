@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>dojo-smore D.O.H. Unit Test Runner</title>
+	</head>
+	<body>
+		Redirecting to D.O.H runner.
+		<script>
+			// Redirect using JS, so we can include a fudged path to accommodate
+			// inclusion of this package under any name as long as it's a sibling of
+			// dojo.
+			location.href = "../../util/doh/runner.html?async=true&paths=dojo-smore," +
+			location.pathname.slice(0, location.pathname.lastIndexOf("/test/")) +
+			"&test=dojo-smore/test/module";
+		</script>
+	</body>
+</html>
