@@ -27,9 +27,11 @@ function(doh, when, all, request, Memory, Observable, RequestMemory) {
 						var
 							reqmemResults = results[0],
 							reqmemfastResults = results[1],
-							memResults = mem.query({});
-						t.t(4 === results[0].length && 4 === results[1].length &&
-							4 === memResults.length &&
+							memResults = mem.query({}),
+							memLength = memResults.length;
+						t.t(4 === memLength &&
+							memLength === reqmemResults.length &&
+							memLength === reqmemfastResults.length &&
 							reqmemResults[0].name === reqmemfastResults[0].name &&
 							reqmemResults[0].name === memResults[0].name &&
 							reqmemResults[3].name === reqmemfastResults[3].name &&
@@ -44,6 +46,32 @@ function(doh, when, all, request, Memory, Observable, RequestMemory) {
 					"query on RequestMemory w/ alwaysPromise: true should return a promise wrapped with QueryResults");
 				t.t(reqmemfastResults.forEach,
 					"query on RequestMemory w/ alwaysPromise: false should return an object wrapped with QueryResults");
+				
+				return dfd;
+			},
+			function testPagedQuery(t) {
+				var dfd = new doh.Deferred(),
+					reqmemResults = reqmem.query({}),
+					reqmemfastResults = reqmemfast.query({}),
+					reqmemPagedResults = reqmem.query({}, { start: 0, count: 1 }),
+					reqmemfastPagedResults = reqmemfast.query({}, { start: 0, count: 1 });
+				
+				all([
+					reqmemResults.total,
+					when(reqmemfastResults.total),
+					reqmemPagedResults.total,
+					when(reqmemfastPagedResults.total)
+				]).then(function(results) {
+					dfd.getTestCallback(function() {
+						var memTotal = mem.query({}, { start: 0, count: 1 }).total;
+						t.t(4 === memTotal &&
+							memTotal === results[0] && memTotal === results[1] &&
+							memTotal === results[2] && memTotal === results[3],
+							"All stores should eventually yield matching totals");
+					})();
+				}, function(err) {
+					dfd.errback(err);
+				});
 				
 				return dfd;
 			},

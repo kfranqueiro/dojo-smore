@@ -2,12 +2,11 @@ define([
 	"dojo/_base/declare",
 	"dojo/_base/lang",
 	"dojo/_base/array",
-	"dojo/Deferred",
 	"dojo/when",
 	"dojo/request",
 	"dojo/store/Memory",
 	"dojo/store/util/QueryResults"
-], function(declare, lang, arrayUtil, Deferred, when, request, Memory, QueryResults) {
+], function(declare, lang, arrayUtil, when, request, Memory, QueryResults) {
 	var Request = declare(Memory, {
 		// summary:
 		//		Implementation of an in-memory store primed by data from an
@@ -52,17 +51,19 @@ define([
 		
 		query: function(query, options) {
 			var self = this,
-				totalPromise = new Deferred(),
-				ret = when(this._promise, function() {
+				ret = new QueryResults(when(this._promise, function() {
 					// This is slightly repetitive of dojo/store/Memory; we can't simply
 					// call inherited (would end up wrapping early with QueryResults).
-					var results = self.queryEngine(query, options)(self.data);
-					totalPromise.resolve(results.total);
-					return results;
-				});
+					return self.queryEngine(query, options)(self.data);
+				}));
 			
-			ret.total = totalPromise.promise;
-			return new QueryResults(ret);
+			ret.total = when(ret, function(results) {
+				// When the queryEngine call itself comes back, it will not have
+				// a total property unless it puts one there itself from processing
+				// a paging request.  Fall back to length if it's missing (unpaged).
+				return "total" in results ? results.total : results.length;
+			});
+			return ret;
 		},
 		
 		setUrl: function(url) {
