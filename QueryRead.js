@@ -148,7 +148,7 @@ define([
 							// Received an array directly; check for Content-Range header to
 							// denote total count.  Failing that, fall back to length of array.
 							range = response.getHeader("Content-Range");
-							index = range.lastIndexOf("/");
+							index = range ? range.lastIndexOf("/") : -1;
 							return index > -1 ? +range.slice(index + 1) : response.data.length;
 						}
 						// Otherwise, retrieve total from the appropriate property.

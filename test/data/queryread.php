@@ -21,11 +21,13 @@ if ($_GET[$sortParam]) {
 	$desc = substr($_GET[$sortParam], 0, 1) == '-';
 }
 
-// Allow switching between response of outer object with items/total, and
+// Allow responding with outer object with items/total, and/or
 // direct array w/ Content-Range header representing total.
+// (Provided as separate params to test edge cases as well.)
 if ($_GET['useContentRange']) {
 	header('Content-Range: items ' . $start . '-' . $end . '/' . $total);
-} else {
+}
+if ($_GET['useObject']) {
 	echo '{"' . $totalProperty . '":' . $total . ',"' . $itemsProperty . '":';
 }
 echo '[';
@@ -41,7 +43,7 @@ if ($_GET['id']) {
 	}
 }
 echo ']';
-if (!$_GET['useContentRange']) {
+if ($_GET['useObject']) {
 	echo '}'; // End the outer object.
 }
 ?>
