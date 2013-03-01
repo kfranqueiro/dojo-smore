@@ -1,0 +1,27 @@
+{
+	"name": "dojo-smore",
+	"author": "Kenneth G. Franqueiro",
+	"version": "0.1",
+	"description": "S'more dojo/store implementations.",
+	"licenses": [
+		{
+			"type": "AFLv2.1",
+			"url": "https://github.com/kfranqueiro/dojo-smore/blob/master/LICENSE#L36-188"
+		},
+		{
+			"type": "BSD",
+			"url": "https://github.com/kfranqueiro/dojo-smore/blob/master/LICENSE#L6-33"
+		}
+	],
+	"repository": {
+		"type":"git",
+		"url":"https://github.com/kfranqueiro/dojo-smore"
+	},
+	"dependencies": {
+		"dojo": "1.8.3"
+	},
+	"directories": {
+		"lib": "."
+	},
+	"dojoBuild": "package.js"
+}
