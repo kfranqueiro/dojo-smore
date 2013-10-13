@@ -21,6 +21,17 @@ function(doh, request, all, Csv) {
 					data: data,
 					trim: true
 				});
+				stores.noQuoteNoHeaderAutoId = new Csv({
+					data: data,
+					fieldNames: ["id", "last", "first", "born", "died"],
+					trim: true,
+					idProperty: "" // Tell store to auto-generate IDs
+				});
+				stores.noQuoteAutoId = new Csv({
+					data: data,
+					trim: true,
+					idProperty: "" // Tell store to auto-generate IDs
+				});
 			}),
 			request(xhrBase + "/quote.csv").then(function(data) {
 				csvs.quote = data;
@@ -102,6 +113,26 @@ function(doh, request, all, Csv) {
 					"Multiline value should remain intact.");
 				t.t(/smiling,\r\n/.test(withHeader.get("2").quote),
 					"Multiline value should use same newline format as input.");
+			},
+			function autoId(t) {
+				var noQuoteAutoId = stores.noQuoteAutoId,
+					noQuoteNoHeaderAutoId = stores.noQuoteNoHeaderAutoId;
+				console.log(noQuoteAutoId.data, noQuoteNoHeaderAutoId.data);
+				t.is(noQuoteNoHeaderAutoId.get("1").last, "last",
+					"Item 1 should be the first line");
+				t.is(noQuoteNoHeaderAutoId.get("2").last, "Hawking",
+					"Item 2 should be the second line");
+				t.is(noQuoteNoHeaderAutoId.get("3").last, "Einstein",
+					"Item 3 should be the third line");
+				t.is(noQuoteNoHeaderAutoId.get("4").last, "Tesla",
+					"Item 4 should be the fourth line");
+				
+				t.is(noQuoteAutoId.get("1").last, "Hawking",
+					"Item 1 should be the first non-header line");
+				t.is(noQuoteAutoId.get("2").last, "Einstein",
+					"Item 2 should be the second non-header line");
+				t.is(noQuoteAutoId.get("3").last, "Tesla",
+					"Item 3 should be the third non-header line");
 			},
 			function importExport(t) {
 				t.is(csvs.contributors, stores.contributors.toCsv(),

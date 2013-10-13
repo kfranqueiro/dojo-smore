@@ -24,6 +24,12 @@ define([
 		// summary:
 		//		Extension of dojo/store/Memory supporting an input string in CSV format.
 		
+		// idProperty: String
+		//		Indicates the field in CSV entries representing the unique
+		//		identity of each item.  Defaults to "id".  If set to a falsy
+		//		value (e.g. ""), IDs will be auto-generated based on their order
+		//		in the CSV data (starting at 1).
+		
 		// fieldNames: Array?
 		//		If specified, indicates names of fields in the order they appear in
 		//		CSV records.  If unspecified, the first line of the CSV will be treated
@@ -56,8 +62,13 @@ define([
 				values = [], // records values in the current record
 				value = "",
 				prefix = "", // used to re-add delimiters and newlines to a spanning value
-				parts, part, numlines, numparts, match,
+				parts, part, numlines, numparts, match, item, index,
 				i, j, k;
+			
+			if (!this.idProperty) {
+				// Set idProperty to field we will auto-generate sequentially
+				this.idProperty = "__id";
+			}
 			
 			// Outer loop iterates over lines.  It's labeled so that inner loop
 			// can jump out if an invalid value is encountered.
@@ -118,7 +129,10 @@ define([
 						// first row of data.
 						fieldNames = this.fieldNames = values;
 					} else {
-						data.push(arrays2hash(fieldNames, values));
+						index = data.push(item = arrays2hash(fieldNames, values));
+						if (this.idProperty === "__id") {
+							item.__id = index;
+						}
 					}
 					values = [];
 				} else {
