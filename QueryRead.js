@@ -102,7 +102,7 @@ define([
 			// tags:
 			//		extension
 			
-			var q = lang.clone(query);
+			var q = lang.mixin({}, query);
 			
 			if (queryOptions) {
 				if (typeof queryOptions.start !== "undefined") {
