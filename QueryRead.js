@@ -1,11 +1,9 @@
 define([
-	"dojo/_base/lang", // for mixin and delegate
-	"dojo/_base/declare",
-	"dojo/request",
-	"dojo/store/util/QueryResults"
-], function(lang, declare, request, QueryResults) {
-	var rangeRx = /\/(\d+)$/;
-	
+	'dojo/_base/lang', // for mixin and delegate
+	'dojo/_base/declare',
+	'dojo/request',
+	'dojo/store/util/QueryResults'
+], function (lang, declare, request, QueryResults) {
 	return declare(null, {
 		// summary:
 		//		Implementation of dojo/store's read APIs (get, getIdentity, query)
@@ -31,38 +29,38 @@ define([
 		//			more consistent API (get always returns a promise).
 		//			QueryReadStore-like `get` caching could easily be achieved using
 		//			dojo/store/Cache.
-		
+
 		// url: String
 		//		URL to send requests to.
-		url: "",
-		
+		url: '',
+
 		// idProperty: String
 		//		Name of property containing the unique identifier of each item.
-		idProperty: "id",
-		
+		idProperty: 'id',
+
 		// totalProperty: String
 		//		If the server responds to queries with an object, this specifies the
 		//		property denoting the total number of results for the query.
-		totalProperty: "total",
-		
+		totalProperty: 'total',
+
 		// itemsProperty: String
 		//		If the server responds to queries with an object, this specifies the
 		//		property containing the array of requested items.
-		itemsProperty: "items",
-		
+		itemsProperty: 'items',
+
 		// startParam: String
 		//		Name of request parameter used to inform server of start of range.
-		startParam: "start",
-		
+		startParam: 'start',
+
 		// countParam: String
 		//		Name of request parameter used to inform server of length of range.
-		countParam: "count",
-		
+		countParam: 'count',
+
 		// sortParam: String
 		//		Name of request parameter used to inform server of sort preference.
-		sortParam: "sort",
-		
-		processSort: function(sort) {
+		sortParam: 'sort',
+
+		processSort: function (sort) {
 			// summary:
 			//		Given the value of the sort property from a queryOptions object,
 			//		returns a string to be passed in the server query, as the value of
@@ -79,20 +77,18 @@ define([
 			//		String to be used as value of request parameter for sorting.
 			// tags:
 			//		extension
-			
-			var value = "",
-				len = sort.length,
-				i;
-			
-			for (i = 0; i < len; i++) {
-				value += (sort[i].descending ? "-" : "") + sort[i].attribute + ",";
+
+			var value = '';
+
+			for (var i = 0, len = sort.length; i < len; i++) {
+				value += (sort[i].descending ? '-' : '') + sort[i].attribute + ',';
 			}
-			
+
 			// Exclude trailing comma when returning.
 			return value.slice(0, -1); // String
 		},
-		
-		processQuery: function(query, queryOptions) {
+
+		processQuery: function (query, queryOptions) {
 			// summary:
 			//		Method responsible for any necessary processing of incoming
 			//		store query arguments.  May be overridden for special needs.
@@ -101,27 +97,27 @@ define([
 			//		(typically just a query property).
 			// tags:
 			//		extension
-			
+
 			var q = lang.mixin({}, query);
-			
+
 			if (queryOptions) {
-				if (typeof queryOptions.start !== "undefined") {
+				if (typeof queryOptions.start !== 'undefined') {
 					q[this.startParam] = queryOptions.start;
 				}
-				if (typeof queryOptions.count !== "undefined") {
+				if (typeof queryOptions.count !== 'undefined') {
 					q[this.countParam] = queryOptions.count;
 				}
 				if (queryOptions.sort) {
 					q[this.sortParam] = this.processSort(queryOptions.sort);
 				}
 			}
-			
+
 			return { // Object
 				query: q
 			};
 		},
-		
-		processRequest: function(promise) {
+
+		processRequest: function (promise) {
 			// summary:
 			//		Method responsible for handling data resolved from the server
 			//		request.  May be overridden for special needs.
@@ -130,74 +126,75 @@ define([
 			//		delegated promise decorated with an additional `total` promise).
 			// tags:
 			//		extension
-			
-			var self = this,
-				resultsPromise = promise.then(function(data) {
-					if (typeof data.length !== "undefined") {
-						// Received an array directly; return it.
-						return data;
+
+			var self = this;
+
+			var resultsPromise = promise.then(function (data) {
+				if (typeof data.length !== 'undefined') {
+					// Received an array directly; return it.
+					return data;
+				}
+				// Otherwise, retrieve items from the appropriate property.
+				return data[self.itemsProperty];
+			});
+
+			// Need to delegate to build results object, since promises are frozen.
+			var results = lang.delegate(resultsPromise, {
+				total: promise.response.then(function (response) {
+					if (typeof response.data.length !== 'undefined') {
+						// Received an array directly; check for Content-Range header to
+						// denote total count.  Failing that, fall back to length of array.
+						var range = response.getHeader('Content-Range');
+						var index = range ? range.lastIndexOf('/') : -1;
+						return index > -1 ? +range.slice(index + 1) : response.data.length;
 					}
-					// Otherwise, retrieve items from the appropriate property.
-					return data[self.itemsProperty];
-				}),
-				// Need to delegate to build results object, since promises are frozen.
-				results = lang.delegate(resultsPromise, {
-					total: promise.response.then(function(response) {
-						var range, index;
-						if (typeof response.data.length !== "undefined") {
-							// Received an array directly; check for Content-Range header to
-							// denote total count.  Failing that, fall back to length of array.
-							range = response.getHeader("Content-Range");
-							index = range ? range.lastIndexOf("/") : -1;
-							return index > -1 ? +range.slice(index + 1) : response.data.length;
-						}
-						// Otherwise, retrieve total from the appropriate property.
-						return response.data[self.totalProperty];
-					})
-				});
-			
+					// Otherwise, retrieve total from the appropriate property.
+					return response.data[self.totalProperty];
+				})
+			});
+
 			return results; // Promise
 		},
-		
-		constructor: function(options) {
+
+		constructor: function (options) {
 			lang.mixin(this, options);
 		},
-		
-		getIdentity: function(obj) {
+
+		getIdentity: function (obj) {
 			// summary:
 			//		Returns an object's identity.
 			// object: Object
 			//		The object to get the identity from.
-			
+
 			return obj[this.idProperty]; // mixed
 		},
-		
-		get: function(id) {
+
+		get: function (id) {
 			// summary:
 			//		Retrieves an object by its identity.
 			// id: mixed
 			//		The identity to match an object against.
-			
+
 			var q = {};
 			q[this.idProperty] = id;
-			
+
 			// Perform a query for a single item with the specified identity.
-			return this.query(q, { start: 0, count: 1 }).then(function(results) { // Promise
+			return this.query(q, { start: 0, count: 1 }).then(function (results) { // Promise
 				return results[0] || null;
 			});
 		},
-		
-		query: function(query, queryOptions) {
+
+		query: function (query, queryOptions) {
 			// summary:
 			//		Queries the store for objects.
 			// query: Object
 			//		The query to use for retrieving relevant objects from the store.
 			// options: dojo/store/api/Store.QueryOptions?
 			//		Additional options for the query, i.e. start, count, and sort.
-			
+
 			return new QueryResults( // dojo/store/util/QueryResults
 				this.processRequest(request(this.url,
-					lang.mixin({ handleAs: "json" }, this.processQuery(query, queryOptions))
+					lang.mixin({ handleAs: 'json' }, this.processQuery(query, queryOptions))
 			)));
 		}
 	});
