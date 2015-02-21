@@ -1,7 +1,7 @@
 {
 	"name": "dojo-smore",
 	"author": "Kenneth G. Franqueiro",
-	"version": "0.2.0-dev",
+	"version": "0.2.0",
 	"description": "S'more dojo/store implementations.",
 	"licenses": [
 		{
