@@ -17,8 +17,8 @@
 		"type":"git",
 		"url":"https://github.com/kfranqueiro/dojo-smore"
 	},
-	"dependencies": {
-		"dojo": "1.8.3"
+	"devDependencies": {
+		"intern-geezer": "~2.2"
 	},
 	"directories": {
 		"lib": "."

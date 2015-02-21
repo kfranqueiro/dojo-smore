@@ -30,14 +30,10 @@ The modules in this package require Dojo 1.8, as they depend on
 To get up and running with this package, simply extract its contents into a
 folder that is a sibling of the `dojo` directory.
 
-Note that while dojo-smore doesn't require anything outside of the `dojo`
-package to work, in order to run the included tests you'll need the following:
+## Tests
 
-* `util/doh` to run the included test pages and test suite
-* `dojox/data` to run `test/Csv_perf.html` (which compares performance of
-  the included Csv store alongside the old `dojox/data/CsvStore` module)
-
-Both of these are included in the full Dojo 1.8 SDK.
+To run the tests, install intern-geezer (which can be done by running `npm install` in the dojo-smore folder),
+then browse to `test/runTests.html`.  Note that the QueryRead tests currently require PHP.
 
 ## License
 
